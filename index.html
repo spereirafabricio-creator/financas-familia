@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Finanças da Família</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f3; color: #1a1a1a; min-height: 100vh; }
+.topbar { background: #fff; border-bottom: 1px solid #e5e5e5; padding: 12px 20px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+.topbar-title { font-size: 16px; font-weight: 600; color: #1a1a1a; }
+.topbar-sub { font-size: 12px; color: #888; margin-top: 1px; }
+.status-bar { font-size: 12px; color: #888; display: flex; align-items: center; gap: 6px; }
+.dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; background: #EF9F27; }
+.container { max-width: 680px; margin: 0 auto; padding: 16px; }
+.nav { display: flex; gap: 4px; background: #fff; border: 1px solid #e5e5e5; border-radius: 12px; padding: 4px; margin-bottom: 16px; overflow-x: auto; }
+.nav-btn { flex: 1; min-width: 80px; padding: 8px 10px; font-size: 12px; border: none; background: transparent; cursor: pointer; color: #888; border-radius: 8px; font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 5px; white-space: nowrap; }
+.nav-btn.active { background: #378ADD; color: #fff; font-weight: 500; }
+.nav-btn:hover:not(.active) { background: #f5f5f3; color: #1a1a1a; }
+.page { display: none; }
+.page.active { display: block; }
+.metric-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 14px; }
+@media(min-width:480px){ .metric-grid { grid-template-columns: repeat(4,1fr); } }
+.metric { background: #fff; border-radius: 10px; padding: 12px 14px; border: 1px solid #e5e5e5; }
+.metric-label { font-size: 11px; color: #888; margin-bottom: 4px; }
+.metric-value { font-size: 20px; font-weight: 600; }
+.card { background: #fff; border: 1px solid #e5e5e5; border-radius: 12px; padding: 16px; margin-bottom: 12px; }
+.card-title { font-size: 13px; font-weight: 600; color: #555; margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 4px; }
+.bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.bar-label { font-size: 12px; color: #1a1a1a; width: 110px; flex-shrink: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bar-track { flex: 1; height: 6px; background: #f0f0f0; border-radius: 3px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 3px; }
+.bar-amount { font-size: 12px; color: #888; width: 72px; text-align: right; flex-shrink: 0; }
+.tx-row { display: flex; align-items: center; gap: 12px; padding: 9px 0; border-bottom: 1px solid #f0f0f0; }
+.tx-row:last-child { border-bottom: none; }
+.tx-icon { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0; }
+.tx-info { flex: 1; min-width: 0; }
+.tx-desc { font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tx-meta { font-size: 11px; color: #888; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tx-amount { font-size: 13px; font-weight: 600; flex-shrink: 0; }
+.tx-del { background: none; border: none; cursor: pointer; color: #ccc; font-size: 15px; padding: 4px; line-height: 1; }
+.tx-del:hover { color: #e24b4a; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+.form-full { grid-template-columns: 1fr; }
+.form-group { display: flex; flex-direction: column; gap: 5px; }
+.form-label { font-size: 12px; color: #555; font-weight: 500; }
+.form-group input, .form-group select, .form-group textarea {
+  font-size: 14px; width: 100%; padding: 9px 12px;
+  border: 1px solid #e5e5e5; border-radius: 8px; background: #fafafa;
+  font-family: inherit; color: #1a1a1a; outline: none;
+}
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+  border-color: #378ADD; background: #fff;
+}
+.form-group textarea { resize: vertical; min-height: 60px; }
+.submit-btn {
+  width: 100%; padding: 11px; font-size: 14px; font-weight: 600;
+  background: #378ADD; color: #fff; border: none; border-radius: 10px;
+  cursor: pointer; margin-top: 4px; font-family: inherit;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+}
+.submit-btn:hover { background: #185FA5; }
+.submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.alert { padding: 10px 14px; border-radius: 8px; font-size: 13px; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+.alert.success { background: #eaf3de; color: #3b6d11; }
+.alert.error { background: #fcebeb; color: #a32d2d; }
+.alert.warning { background: #faeeda; color: #854f0b; }
+.progress-wrap { margin-bottom: 16px; }
+.progress-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; }
+.progress-name { font-size: 14px; font-weight: 600; }
+.progress-pct { font-size: 12px; color: #888; }
+.progress-track { height: 8px; background: #f0f0f0; border-radius: 4px; overflow: hidden; margin-bottom: 4px; }
+.progress-fill { height: 100%; border-radius: 4px; background: #378ADD; }
+.progress-sub { display: flex; justify-content: space-between; font-size: 11px; color: #888; }
+.cc-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 8px; margin-bottom: 12px; }
+@media(min-width:480px){ .cc-grid { grid-template-columns: repeat(4,1fr); } }
+.cc-card { background: #f5f5f3; border-radius: 10px; padding: 10px 12px; }
+.cc-name { font-size: 11px; font-weight: 600; color: #555; margin-bottom: 4px; }
+.cc-amount { font-size: 17px; font-weight: 600; color: #a32d2d; }
+.cc-count { font-size: 11px; color: #888; }
+.ai-box { background: #f5f5f3; border-radius: 10px; padding: 14px 16px; }
+.ai-result { font-size: 14px; line-height: 1.75; white-space: pre-wrap; color: #1a1a1a; }
+#alert-area { position: sticky; top: 64px; z-index: 99; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div>
+    <div class="topbar-title">Finanças da família</div>
+    <div class="topbar-sub" id="mes-atual"></div>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px;">
+    <div class="status-bar"><div class="dot" id="sdot"></div><span id="stxt">Carregando...</span></div>
+    <button onclick="loadAll()" style="font-size:12px;padding:6px 10px;border:1px solid #e5e5e5;border-radius:8px;background:#fff;cursor:pointer;display:flex;align-items:center;gap:4px;font-family:inherit;">
+      <i class="ti ti-refresh" style="font-size:14px;"></i> Atualizar
+    </button>
+  </div>
+</div>
+
+<div class="container">
+  <div id="alert-area"></div>
+
+  <nav class="nav">
+    <button class="nav-btn active" onclick="showPage('dashboard',this)"><i class="ti ti-home"></i> Dashboard</button>
+    <button class="nav-btn" onclick="showPage('lancar',this)"><i class="ti ti-plus"></i> Lançar</button>
+    <button class="nav-btn" onclick="showPage('cartoes',this)"><i class="ti ti-credit-card"></i> Cartões</button>
+    <button class="nav-btn" onclick="showPage('metas',this)"><i class="ti ti-target"></i> Metas</button>
+    <button class="nav-btn" onclick="showPage('ia',this)"><i class="ti ti-robot"></i> IA</button>
+  </nav>
+
+  <!-- DASHBOARD -->
+  <div id="page-dashboard" class="page active">
+    <div class="metric-grid">
+      <div class="metric"><div class="metric-label">Receitas</div><div class="metric-value" id="m-rec" style="color:#3b6d11;">—</div></div>
+      <div class="metric"><div class="metric-label">Despesas</div><div class="metric-value" id="m-desp" style="color:#a32d2d;">—</div></div>
+      <div class="metric"><div class="metric-label">Saldo</div><div class="metric-value" id="m-saldo">—</div></div>
+      <div class="metric"><div class="metric-label">Lançamentos</div><div class="metric-value" id="m-count">—</div></div>
+    </div>
+    <div class="card">
+      <div class="card-title">
+        <span>Gastos por categoria</span>
+        <span id="alerta-cat" style="font-size:11px;color:#854f0b;"></span>
+      </div>
+      <div id="cat-bars"><p style="font-size:13px;color:#888;">Carregando...</p></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Últimos lançamentos</div>
+      <div id="tx-list"><p style="font-size:13px;color:#888;">Carregando...</p></div>
+    </div>
+  </div>
+
+  <!-- LANÇAR -->
+  <div id="page-lancar" class="page">
+    <div class="card">
+      <div class="card-title">Novo lançamento</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Tipo</label>
+          <select id="f-tipo" onchange="onTipoChange()">
+            <option>Despesa</option>
+            <option>Receita</option>
+            <option>Pagamento fatura</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Data</label>
+          <input type="date" id="f-data">
+        </div>
+      </div>
+      <div class="form-grid form-full">
+        <div class="form-group">
+          <label class="form-label">Descrição</label>
+          <input type="text" id="f-desc" placeholder="Ex: Supermercado Costco">
+        </div>
+      </div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Valor ($)</label>
+          <input type="number" id="f-valor" placeholder="0.00" step="0.01" min="0">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Pessoa</label>
+          <select id="f-pessoa">
+            <option>Fabricio</option>
+            <option>Esposa</option>
+            <option>Família</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-grid">
+        <div class="form-group" id="grp-cat">
+          <label class="form-label">Categoria</label>
+          <select id="f-cat">
+            <option>Moradia</option>
+            <option>Alimentação</option>
+            <option>Transporte</option>
+            <option>Saúde</option>
+            <option>Educação</option>
+            <option>Lazer</option>
+            <option>Roupas</option>
+            <option>Assinaturas</option>
+            <option>Outros</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Meio de pagamento</label>
+          <select id="f-mp">
+            <option>AMEX Platinum</option>
+            <option>Citi Costco</option>
+            <option>Chase Amazon</option>
+            <option>Apple Card</option>
+            <option>Débito / Checking</option>
+            <option>Transferência</option>
+            <option>Dinheiro</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-grid form-full" style="margin-bottom:12px;">
+        <div class="form-group">
+          <label class="form-label">Observação (opcional)</label>
+          <textarea id="f-obs" placeholder="Ex: Parcela 1/3"></textarea>
+        </div>
+      </div>
+      <button class="submit-btn" id="btn-lancar" onclick="submitLancamento()">
+        <i class="ti ti-plus"></i> Salvar lançamento
+      </button>
+    </div>
+  </div>
+
+  <!-- CARTÕES -->
+  <div id="page-cartoes" class="page">
+    <div class="card">
+      <div class="card-title">Fatura estimada este mês</div>
+      <div class="cc-grid" id="cc-faturas"></div>
+      <p style="font-size:12px;color:#888;">Soma das despesas lançadas neste mês por cartão.</p>
+    </div>
+    <div class="card">
+      <div class="card-title">Filtrar por cartão</div>
+      <div style="margin-bottom:12px;">
+        <select id="cc-filter" onchange="renderTxCartao()" style="font-size:14px;width:100%;padding:9px 12px;border:1px solid #e5e5e5;border-radius:8px;background:#fafafa;font-family:inherit;">
+          <option value="">Todos os cartões</option>
+          <option>AMEX Platinum</option>
+          <option>Citi Costco</option>
+          <option>Chase Amazon</option>
+          <option>Apple Card</option>
+        </select>
+      </div>
+      <div id="tx-cartao"></div>
+    </div>
+  </div>
+
+  <!-- METAS -->
+  <div id="page-metas" class="page">
+    <div class="card">
+      <div class="card-title">Progresso das metas</div>
+      <div id="metas-list"><p style="font-size:13px;color:#888;">Carregando...</p></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Atualizar valor guardado</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Meta</label>
+          <select id="meta-sel" style="font-size:14px;padding:9px 12px;border:1px solid #e5e5e5;border-radius:8px;background:#fafafa;font-family:inherit;"></select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Novo valor atual ($)</label>
+          <input type="number" id="meta-val" placeholder="0" step="100" style="font-size:14px;padding:9px 12px;border:1px solid #e5e5e5;border-radius:8px;background:#fafafa;font-family:inherit;">
+        </div>
+      </div>
+      <button class="submit-btn" onclick="submitMeta()"><i class="ti ti-check"></i> Atualizar meta</button>
+    </div>
+  </div>
+
+  <!-- IA -->
+  <div id="page-ia" class="page">
+    <div class="card">
+      <div class="card-title">Análise inteligente do mês</div>
+      <p style="font-size:13px;color:#888;margin-bottom:1rem;line-height:1.6;">O Claude analisa os dados do mês atual e devolve um resumo com padrões, alertas e sugestões personalizadas para a família.</p>
+      <button class="submit-btn" id="btn-ia" onclick="analisarIA()" style="margin-bottom:1rem;">
+        <i class="ti ti-robot"></i> Analisar mês com IA
+      </button>
+      <div id="ia-output" style="display:none;" class="ai-box"></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwNWsAucuPsOKo_YrQQG1zVTONXIkNWgkB6J3WInEIGZSpBTVBoBt8EiulSA9goHhvh/exec';
+const LIMITES = { Moradia:2500, Alimentação:800, Transporte:400, Saúde:300, Educação:200, Lazer:300, Roupas:150, Outros:200, Assinaturas:150 };
+const CAT_COLORS = ['#378ADD','#1D9E75','#7F77DD','#D85A30','#BA7517','#D4537E','#639922','#888780','#5DCAA5','#E24B4A'];
+const CARTOES = ['AMEX Platinum','Citi Costco','Chase Amazon','Apple Card'];
+
+let lancamentos = [];
+let metas = [];
+
+function fmt(v){ return '$'+Math.abs(Number(v)||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+
+function setStatus(state,txt){
+  const colors={ok:'#639922',loading:'#EF9F27',error:'#E24B4A'};
+  document.getElementById('sdot').style.background=colors[state];
+  document.getElementById('stxt').textContent=txt;
+}
+
+function showAlert(msg,type='success'){
+  const icons={success:'ti-check',error:'ti-x',warning:'ti-alert-triangle'};
+  const el=document.getElementById('alert-area');
+  el.innerHTML=`<div class="alert ${type}"><i class="ti ${icons[type]}"></i>${msg}</div>`;
+  setTimeout(()=>el.innerHTML='',4000);
+}
+
+function showPage(id,btn){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  btn.classList.add('active');
+}
+
+function thisMonth(d){
+  if(!d) return false;
+  const dt=new Date(d), n=new Date();
+  return dt.getMonth()===n.getMonth()&&dt.getFullYear()===n.getFullYear();
+}
+
+async function apiGet(action){
+  const r=await fetch(`${SCRIPT_URL}?action=${action}`);
+  return r.json();
+}
+
+async function apiPost(data){
+  const r=await fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify(data)});
+  return r.json();
+}
+
+async function loadAll(){
+  setStatus('loading','Sincronizando...');
+  try{
+    const [l,m]=await Promise.all([apiGet('getLancamentos'),apiGet('getMetas')]);
+    lancamentos=Array.isArray(l)?l:[];
+    metas=Array.isArray(m)?m:[];
+    setStatus('ok','Sincronizado');
+    renderAll();
+  }catch(e){
+    setStatus('error','Erro de conexão');
+    showAlert('Não foi possível conectar ao Google Sheets. Verifique a URL do script.','error');
+  }
+}
+
+function renderAll(){ renderDashboard(); renderFaturas(); renderTxCartao(); renderMetas(); }
+
+function renderDashboard(){
+  const mes=lancamentos.filter(l=>thisMonth(l.Data));
+  const rec=mes.filter(l=>l.Tipo==='Receita').reduce((s,l)=>s+Math.abs(Number(l.Valor||0)),0);
+  const desp=mes.filter(l=>l.Tipo!=='Receita').reduce((s,l)=>s+Math.abs(Number(l.Valor||0)),0);
+  const saldo=rec-desp;
+  document.getElementById('m-rec').textContent=fmt(rec);
+  document.getElementById('m-desp').textContent=fmt(desp);
+  document.getElementById('m-saldo').textContent=fmt(saldo);
+  document.getElementById('m-saldo').style.color=saldo>=0?'#3b6d11':'#a32d2d';
+  document.getElementById('m-count').textContent=mes.length;
+  const totais={};
+  mes.filter(l=>l.Tipo==='Despesa').forEach(l=>{const c=l.Categoria||'Outros';totais[c]=(totais[c]||0)+Math.abs(Number(l.Valor||0));});
+  const sorted=Object.entries(totais).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  const max=sorted[0]?.[1]||1;
+  const alertas=[];
+  document.getElementById('cat-bars').innerHTML=sorted.map(([cat,val],i)=>{
+    const lim=LIMITES[cat]||0;
+    const over=lim&&val>lim;
+    if(over) alertas.push(cat);
+    const pct=Math.round((val/max)*100);
+    const color=over?'#E24B4A':CAT_COLORS[i%CAT_COLORS.length];
+    return `<div class="bar-row"><span class="bar-label">${cat}</span><div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${color};"></div></div><span class="bar-amount" style="color:${over?'#a32d2d':'#888'}">${fmt(val)}</span></div>`;
+  }).join('')||'<p style="font-size:13px;color:#888;">Nenhuma despesa este mês.</p>';
+  document.getElementById('alerta-cat').textContent=alertas.length?'⚠ Limite: '+alertas.join(', '):'';
+  const recent=[...lancamentos].reverse().slice(0,8);
+  document.getElementById('tx-list').innerHTML=recent.length?recent.map(l=>{
+    const isRec=l.Tipo==='Receita';
+    const bg=isRec?'#eaf3de':'#fcebeb';
+    const ic=isRec?'ti-arrow-down':l.Tipo==='Pagamento fatura'?'ti-credit-card':'ti-arrow-up';
+    const vc=isRec?'#3b6d11':'#a32d2d';
+    const desc=l['Descrição']||l.Descricao||'—';
+    const mp=l['Meio de Pagamento']||l.MeioPagamento||'';
+    return `<div class="tx-row"><div class="tx-icon" style="background:${bg};"><i class="ti ${ic}" style="font-size:14px;color:${vc};"></i></div><div class="tx-info"><div class="tx-desc">${desc}</div><div class="tx-meta">${l.Data||''} · ${l.Categoria||''} · ${l.Pessoa||''} · ${mp}</div></div><span class="tx-amount" style="color:${vc};">${isRec?'+':'-'}${fmt(l.Valor)}</span><button class="tx-del" onclick="deletar('${l.ID}')"><i class="ti ti-trash"></i></button></div>`;
+  }).join(''):'<p style="font-size:13px;color:#888;">Nenhum lançamento ainda.</p>';
+}
+
+function renderFaturas(){
+  const mes=lancamentos.filter(l=>thisMonth(l.Data)&&l.Tipo==='Despesa');
+  document.getElementById('cc-faturas').innerHTML=CARTOES.map(c=>{
+    const total=mes.filter(l=>(l['Meio de Pagamento']||l.MeioPagamento||'')===c).reduce((s,l)=>s+Math.abs(Number(l.Valor||0)),0);
+    const count=mes.filter(l=>(l['Meio de Pagamento']||l.MeioPagamento||'')===c).length;
+    return `<div class="cc-card"><div class="cc-name">${c}</div><div class="cc-amount">${fmt(total)}</div><div class="cc-count">${count} compra${count!==1?'s':''}</div></div>`;
+  }).join('');
+}
+
+function renderTxCartao(){
+  const filtro=document.getElementById('cc-filter').value;
+  const lista=filtro?lancamentos.filter(l=>(l['Meio de Pagamento']||l.MeioPagamento||'')===filtro):lancamentos.filter(l=>CARTOES.includes(l['Meio de Pagamento']||l.MeioPagamento||''));
+  const recent=[...lista].reverse().slice(0,15);
+  document.getElementById('tx-cartao').innerHTML=recent.length?recent.map(l=>{
+    const desc=l['Descrição']||l.Descricao||'—';
+    const mp=l['Meio de Pagamento']||l.MeioPagamento||'';
+    return `<div class="tx-row"><div class="tx-icon" style="background:#e6f1fb;"><i class="ti ti-credit-card" style="font-size:14px;color:#185fa5;"></i></div><div class="tx-info"><div class="tx-desc">${desc}</div><div class="tx-meta">${l.Data||''} · ${l.Categoria||''} · ${mp}</div></div><span class="tx-amount" style="color:#a32d2d;">-${fmt(l.Valor)}</span></div>`;
+  }).join(''):'<p style="font-size:13px;color:#888;">Nenhum lançamento neste cartão.</p>';
+}
+
+function renderMetas(){
+  if(!metas.length){ document.getElementById('metas-list').innerHTML='<p style="font-size:13px;color:#888;">Nenhuma meta cadastrada no Sheets ainda.</p>'; return; }
+  document.getElementById('metas-list').innerHTML=metas.map(m=>{
+    const nome=m.Nome||m.nome||'—';
+    const atual=Number(m['Valor Atual']||m.ValorAtual||0);
+    const meta=Number(m['Valor Meta']||m.ValorMeta||1);
+    const pct=Math.min(100,Math.round((atual/meta)*100));
+    const prazo=m.Prazo||m.prazo||'';
+    const aporte=m['Aporte Mensal']||m.AporteMensal||'';
+    const icone=m['Ícone']||m.Icone||'';
+    return `<div class="progress-wrap"><div class="progress-header"><span class="progress-name">${icone} ${nome}</span><span class="progress-pct">${pct}%</span></div><div class="progress-track"><div class="progress-fill" style="width:${pct}%;"></div></div><div class="progress-sub"><span>${fmt(atual)} guardados</span><span>Meta: ${fmt(meta)}</span></div>${aporte?`<p style="font-size:11px;color:#888;margin-top:3px;">Aporte: ${fmt(aporte)}${prazo?' · Prazo: '+prazo:''}</p>`:''}</div>`;
+  }).join('');
+  document.getElementById('meta-sel').innerHTML=metas.map(m=>`<option>${m.Nome||m.nome}</option>`).join('');
+}
+
+function onTipoChange(){
+  document.getElementById('grp-cat').style.opacity=document.getElementById('f-tipo').value==='Pagamento fatura'?'0.4':'1';
+}
+
+async function submitLancamento(){
+  const btn=document.getElementById('btn-lancar');
+  const desc=document.getElementById('f-desc').value.trim();
+  const valor=document.getElementById('f-valor').value;
+  const data=document.getElementById('f-data').value;
+  if(!desc||!valor||!data){showAlert('Preencha descrição, valor e data.','warning');return;}
+  btn.disabled=true; btn.textContent='Salvando...';
+  const tipo=document.getElementById('f-tipo').value;
+  try{
+    const r=await apiPost({action:'addLancamento',data,descricao:desc,categoria:document.getElementById('f-cat').value,valor:tipo==='Receita'?Math.abs(Number(valor)):-Math.abs(Number(valor)),tipo,pessoa:document.getElementById('f-pessoa').value,meioPagamento:document.getElementById('f-mp').value,observacao:document.getElementById('f-obs').value});
+    if(r.success){showAlert('Lançamento salvo no Google Sheets!','success');document.getElementById('f-desc').value='';document.getElementById('f-valor').value='';document.getElementById('f-obs').value='';await loadAll();}
+    else showAlert('Erro: '+(r.error||'resposta inválida'),'error');
+  }catch(e){showAlert('Erro de conexão com o Sheets.','error');}
+  btn.disabled=false;btn.innerHTML='<i class="ti ti-plus"></i> Salvar lançamento';
+}
+
+async function deletar(id){
+  if(!id) return;
+  try{await apiPost({action:'deleteLancamento',id});showAlert('Lançamento removido.','success');await loadAll();}
+  catch(e){showAlert('Erro ao deletar.','error');}
+}
+
+async function submitMeta(){
+  const nome=document.getElementById('meta-sel').value;
+  const valor=document.getElementById('meta-val').value;
+  if(!valor){showAlert('Informe o valor atual.','warning');return;}
+  try{await apiPost({action:'updateMeta',nome,valorAtual:Number(valor)});showAlert('Meta atualizada!','success');await loadAll();}
+  catch(e){showAlert('Erro ao atualizar meta.','error');}
+}
+
+async function analisarIA(){
+  const btn=document.getElementById('btn-ia');
+  const box=document.getElementById('ia-output');
+  btn.disabled=true;btn.textContent='Analisando...';
+  box.style.display='block';
+  box.innerHTML='<div style="font-size:13px;color:#888;display:flex;align-items:center;gap:8px;"><i class="ti ti-loader" style="font-size:16px;"></i> Claude está analisando os dados do mês...</div>';
+  const mes=lancamentos.filter(l=>thisMonth(l.Data));
+  const totaisCat={};
+  mes.filter(l=>l.Tipo==='Despesa').forEach(l=>{const c=l.Categoria||'Outros';totaisCat[c]=(totaisCat[c]||0)+Math.abs(Number(l.Valor||0));});
+  const rec=mes.filter(l=>l.Tipo==='Receita').reduce((s,l)=>s+Number(l.Valor||0),0);
+  const desp=mes.filter(l=>l.Tipo!=='Receita').reduce((s,l)=>s+Math.abs(Number(l.Valor||0)),0);
+  const porCartao={};
+  CARTOES.forEach(c=>{porCartao[c]=mes.filter(l=>(l['Meio de Pagamento']||l.MeioPagamento||'')===c&&l.Tipo==='Despesa').reduce((s,l)=>s+Math.abs(Number(l.Valor||0)),0);});
+  const prompt=`Você é um consultor financeiro pessoal. Analise os dados desta família (casal com filho pequeno, Apex, NC, EUA) e responda em português.\n\nMês atual:\n- Receitas: $${rec.toFixed(2)}\n- Despesas: $${desp.toFixed(2)}\n- Saldo: $${(rec-desp).toFixed(2)}\n- Lançamentos: ${mes.length}\n\nGastos por categoria:\n${Object.entries(totaisCat).map(([c,v])=>`- ${c}: $${v.toFixed(2)}`).join('\n')||'(nenhum)'}\n\nFaturas por cartão:\n${Object.entries(porCartao).map(([c,v])=>`- ${c}: $${v.toFixed(2)}`).join('\n')}\n\nMetas:\n${metas.map(m=>`- ${m.Nome||m.nome}: $${m['Valor Atual']||0} / $${m['Valor Meta']||0}`).join('\n')||'(nenhuma)'}\n\nResponda com: 1) Resumo do mês (2-3 linhas), 2) Alertas se necessário, 3) Duas sugestões práticas.`;
+  try{
+    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:prompt}]})});
+    const d=await r.json();
+    box.innerHTML=`<div class="ai-result">${d.content?.[0]?.text||'Não foi possível gerar análise.'}</div>`;
+  }catch(e){box.innerHTML='<div class="ai-result" style="color:#a32d2d;">Erro ao conectar com a IA.</div>';}
+  btn.disabled=false;btn.innerHTML='<i class="ti ti-robot"></i> Analisar novamente';
+}
+
+document.getElementById('f-data').value=new Date().toISOString().split('T')[0];
+document.getElementById('mes-atual').textContent=new Date().toLocaleDateString('pt-BR',{month:'long',year:'numeric'});
+loadAll();
+</script>
+</body>
+</html>
